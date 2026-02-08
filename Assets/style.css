@@ -107,3 +107,42 @@ body {
   white-space: nowrap;
   overflow: visible;
 }
+
+
+/* ------------------------SLIDER--------------------------- */
+
+/* Improve timestamp label spacing */
+.rc-slider-mark-text {
+    white-space: nowrap;
+    font-size: 12px;
+    transform: translateY(10px);
+}
+
+/* Hide the left and right numeric input boxes on Dash RangeSlider */
+.rc-slider-input-number,
+.rc-slider-input-number-group,
+.rc-slider-input-number-wrapper,
+.rc-slider-input-number-input {
+    display: none !important;
+}
+
+/* Hide the wrapper that forces them to appear */
+.rc-slider-input {
+    display: none !important;
+}
+
+.slider-wrapper {
+    display: block;   /* forces normal layout */
+    width: 100%;
+}
+
+
+.time-row {
+    display: flex;
+    gap: 20px;        /* spacing between start/end */
+    align-items: center;
+}
+
+.time-row .selector {
+    flex: 1;          /* optional: makes them equal width */
+}
