@@ -13,6 +13,7 @@ import callbacks.graph_callbacks
 import callbacks.agg_callbacks
 import callbacks.time_callbacks
 import callbacks.power_callbacks
+import callbacks.ws_callbacks
 
 
 if __name__ == "__main__":
