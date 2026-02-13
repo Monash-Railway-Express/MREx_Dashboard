@@ -1,6 +1,12 @@
-from dash import dash_table
+from dash import html, dash_table
 
 def log_table():
-    return dash_table.DataTable(
-        id="log-table",
+    return html.Div(
+        className="data-table",
+        children=[
+            dash_table.DataTable(
+                id="log-table",
+                fixed_rows={"headers": True}
+            )
+        ],
     )
