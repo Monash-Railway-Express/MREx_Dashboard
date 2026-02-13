@@ -1,4 +1,4 @@
-from dash import html, dcc, Input, Output
+from dash import html, dcc
 # Assuming load_csv is a function that loads your CSV and is already defined or imported
 # from your_data_loading_module import load_csv  
 
@@ -6,19 +6,43 @@ def selectors(csv_files):
     return html.Div(
         children=[
             # File selector
+            html.H1("Select log source"),
+
             html.Div(
-                className="file-menu",
+                className="file-menu-container",
                 children=[
-                    html.Div("Select CSV File", className="menu-title"),
-                    dcc.Dropdown(
-                        id="file-selector",
-                        options=[{"label": f, "value": f} for f in csv_files],
-                        value=csv_files[0] if csv_files else None,
-                        clearable=False,
-                        className="dropdown",
+                    html.Div(
+                        className="file-menu",
+                        children=[
+                            html.Div("Logs folder", className="menu-title"),
+                            dcc.Dropdown(
+                                id="folder-selector",
+                                options=[{"label": f, "value": f} for f in csv_files],
+                                value=csv_files[0] if csv_files else None,
+                                clearable=False,
+                                className="dropdown",
+                            ),
+                        ],
                     ),
-                ],
+
+                    html.Div(
+                        className="file-menu",
+                        children=[
+                            html.Div("Local device", className="menu-title"),
+                            dcc.Upload(
+                                id="local-selector",
+                                className="dnd",
+                                children=html.Div([
+                                    "Drag and drop or ",
+                                    html.A("Select file")
+                                ]),
+                            ),
+                        ],
+                    ),
+                ]
             ),
+
+            html.Hr(),
 
             # ID selector
             html.Div(

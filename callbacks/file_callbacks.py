@@ -1,5 +1,6 @@
 import os
-from dash import Input, Output
+import base64
+from dash import ctx, Input, Output
 import pandas as pd
 from app import app
 from utils.data_loader import load_csv
@@ -9,18 +10,23 @@ LOGS_DIR = os.path.join(BASE_DIR, "Logs")
 
 @app.callback(
     Output("log-string", "data"),
-    Input("file-selector", "value"),
+    Input("folder-selector", "value"),
+    Input("local-selector", "contents"),
 )
-def update_log_string(filename):
-    if not filename:
-        return ""
-    
-    path = os.path.join(LOGS_DIR, filename)
-    
-    with open(path, "r") as file:
-        log_string = file.read()
+def update_log_string(filename, contents):
+    if ctx.triggered_id == "local-selector":
+        _, content_string = contents.split(",")
+        return base64.b64decode(content_string).decode("utf-8")
+    else:
+        if not filename:
+            return ""
+        
+        path = os.path.join(LOGS_DIR, filename)
+        
+        with open(path, "r") as file:
+            log_string = file.read()
 
-    return log_string
+        return log_string
 
 @app.callback(
     Output("id-selector", "options"),

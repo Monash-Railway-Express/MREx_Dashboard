@@ -146,3 +146,24 @@ body {
 .time-row .selector {
     flex: 1;          /* optional: makes them equal width */
 }
+
+.file-menu-container {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+h1 {
+  text-align: center;
+}
+
+a {
+  color: #7f3f98;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.dnd {
+  border: 1px dashed;
+  border-radius: 5px;
+  padding: 10px;
+}
