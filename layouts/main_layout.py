@@ -1,4 +1,4 @@
-from dash import html
+from dash import html, dcc
 from .header import header
 from .selectors import selectors
 from .time_graphs import time_graphs
@@ -18,5 +18,6 @@ def main_layout(csv_files):
             energy_graphs(),
             websocket(),
             log_table(),
+            dcc.Store(id="log-string"),
         ],
     )

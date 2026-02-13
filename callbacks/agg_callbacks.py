@@ -11,16 +11,13 @@ pio.templates.default = "plotly"
 @app.callback(
     Output("agg-time-series", "figure"),
     Output("agg-bar", "figure"),
-    Input("file-selector", "value"),
+    Input("log-string", "data"),
     Input("id-selector", "value"),
     Input("time-range-slider", "value"),
     Input("agg-interval", "value"),
 )
-def update_aggregated_graphs(filename, selected_ids, slider_range, agg_interval):
-    if not filename or not selected_ids:
-        return {}, {}
-
-    df = load_csv(filename)
+def update_aggregated_graphs(log_string, selected_ids, slider_range, agg_interval):
+    df = load_csv(log_string)
     df = df[df["ID"].isin(selected_ids)]
 
     # Filter by time range using timestamps, not indices

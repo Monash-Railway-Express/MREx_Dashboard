@@ -1,3 +1,4 @@
+from io import StringIO
 from dash import Output, Input
 from app import app
 from utils.data_loader import load_csv
@@ -9,16 +10,13 @@ import pandas as pd
 @app.callback(
     Output("time-series-graph", "figure"),
     Output("occurrence-bar", "figure"),
-    Input("file-selector", "value"),
+    Input("log-string", "data"),
     Input("id-selector", "value"),
     Input("time-range-slider", "value"),
 )
-def update_graph(filename, selected_ids, slider_range):
+def update_graph(log_string, selected_ids, slider_range):
     """Update graphs based on file selection, IDs, and time range."""
-    if not filename or not selected_ids:
-        return {}, {}
-
-    df = load_csv(filename)
+    df = load_csv(log_string)
     df = df[df["ID"].isin(selected_ids)]
 
     # Determine time range

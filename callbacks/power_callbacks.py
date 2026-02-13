@@ -1,3 +1,4 @@
+from io import StringIO
 from dash import Output, Input
 from app import app
 from callbacks.graph_callbacks import _get_time_range
@@ -9,7 +10,7 @@ import pandas as pd
 @app.callback(
     Output("energy-metric-graph", "figure"),
     Output("soc-graph", "figure"),
-    Input("file-selector", "value"),
+    Input("log-string", "data"),
     Input("id-selector", "value"),
     Input("time-range-slider", "value"),
     Input("energy-metric-selector", "value"),
@@ -17,11 +18,8 @@ import pandas as pd
 
 
 
-def update_energy_graphs(filename, selected_ids, slider_range, metric):
-    if not filename:
-        return {}, {}
-
-    df = load_csv(filename)
+def update_energy_graphs(log_string, selected_ids, slider_range, metric):
+    df = load_csv(log_string)
 
     # Time filtering
     start_dt, end_dt = _get_time_range(df, slider_range)

@@ -1,6 +1,26 @@
+import os
 from dash import Input, Output
+import pandas as pd
 from app import app
 from utils.data_loader import load_csv
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LOGS_DIR = os.path.join(BASE_DIR, "Logs")
+
+@app.callback(
+    Output("log-string", "data"),
+    Input("file-selector", "value"),
+)
+def update_log_string(filename):
+    if not filename:
+        return ""
+    
+    path = os.path.join(LOGS_DIR, filename)
+    
+    with open(path, "r") as file:
+        log_string = file.read()
+
+    return log_string
 
 @app.callback(
     Output("id-selector", "options"),
@@ -9,13 +29,10 @@ from utils.data_loader import load_csv
     Output("time-range-slider", "max"),
     Output("time-range-slider", "value"),
     Output("time-range-slider", "marks"),
-    Input("file-selector", "value"),
+    Input("log-string", "data"),
 )
-def update_id_selector(filename):
-    if not filename:
-        return [], [], 0, 0, [0, 0], {}
-
-    df = load_csv(filename)
+def update_id_selector(log_string):
+    df = load_csv(log_string)
     ids = sorted(df["ID"].unique())
 
     # Convert timestamps to POSIX seconds
