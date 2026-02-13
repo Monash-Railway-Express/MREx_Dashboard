@@ -5,6 +5,7 @@ from .time_graphs import time_graphs
 from .agg_graphs import agg_graphs
 from .power import energy_graphs
 from .websocket import websocket
+from .log_table import log_table
 
 def main_layout(csv_files):
     return html.Div(
@@ -16,5 +17,6 @@ def main_layout(csv_files):
             agg_graphs(),
             energy_graphs(),
             websocket(),
+            log_table(),
         ],
     )
