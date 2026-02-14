@@ -1,6 +1,6 @@
 import os
 import base64
-from dash import ctx, Input, Output
+from dash import State, ctx, Input, Output
 import pandas as pd
 from app import app
 from utils.data_loader import load_csv
@@ -10,23 +10,29 @@ LOGS_DIR = os.path.join(BASE_DIR, "Logs")
 
 @app.callback(
     Output("log-string", "data"),
+    Output("ws-connected", "data"),
     Input("folder-selector", "value"),
     Input("local-selector", "contents"),
+    Input("remote-selector", "n_clicks"),
+    State("ws", "message"),
 )
-def update_log_string(filename, contents):
+def update_log_string(filename, contents, _, message):
     if ctx.triggered_id == "local-selector":
         _, content_string = contents.split(",")
-        return base64.b64decode(content_string).decode("utf-8")
+        log_string = base64.b64decode(content_string).decode("utf-8")
+        return log_string, False
+    elif ctx.triggered_id == "remote-selector":
+        return f"Timestamp,ID,DLC,Data0,Data1,Data2,Data3,Data4,Data5,Data6,Data7\n{message["data"]}\n", True
     else:
         if not filename:
-            return ""
+            return "", False
         
         path = os.path.join(LOGS_DIR, filename)
         
         with open(path, "r") as file:
             log_string = file.read()
 
-        return log_string
+        return log_string, False
 
 @app.callback(
     Output("id-selector", "options"),

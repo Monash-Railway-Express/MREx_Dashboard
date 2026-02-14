@@ -32,10 +32,21 @@ def selectors(csv_files):
                             dcc.Upload(
                                 id="local-selector",
                                 className="dnd",
-                                children=html.Div([
+                                children=[
                                     "Drag and drop or ",
-                                    html.A("Select file")
-                                ]),
+                                    dcc.Button("Select file")
+                                ],
+                            ),
+                        ],
+                    ),
+
+                    html.Div(
+                        className="file-menu",
+                        children=[
+                            html.Div("Remote server", className="menu-title"),
+                            dcc.Button(
+                                id="remote-selector",
+                                children=["Connect to WebSocket"],
                             ),
                         ],
                     ),

@@ -1,5 +1,5 @@
 from io import StringIO
-from dash import Output, Input
+from dash import Output, Input, State
 from app import app
 from callbacks.graph_callbacks import _get_time_range
 from utils.data_loader import load_csv
@@ -10,15 +10,13 @@ import pandas as pd
 @app.callback(
     Output("energy-metric-graph", "figure"),
     Output("soc-graph", "figure"),
-    Input("log-string", "data"),
+    Input("second-interval", "n_intervals"),
     Input("id-selector", "value"),
     Input("time-range-slider", "value"),
     Input("energy-metric-selector", "value"),
+    State("log-string", "data"),
 )
-
-
-
-def update_energy_graphs(log_string, selected_ids, slider_range, metric):
+def update_energy_graphs(_, selected_ids, slider_range, metric, log_string):
     df = load_csv(log_string)
 
     # Time filtering

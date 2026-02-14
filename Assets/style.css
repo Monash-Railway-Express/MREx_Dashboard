@@ -156,12 +156,6 @@ h1 {
   text-align: center;
 }
 
-a {
-  color: #7f3f98;
-  cursor: pointer;
-  font-weight: bold;
-}
-
 .dnd {
   border: 1px dashed;
   border-radius: 5px;

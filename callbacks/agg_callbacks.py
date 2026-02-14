@@ -1,4 +1,4 @@
-from dash import Output, Input
+from dash import Output, Input, State
 from app import app
 from utils.data_loader import load_csv
 import plotly.express as px
@@ -11,12 +11,13 @@ pio.templates.default = "plotly"
 @app.callback(
     Output("agg-time-series", "figure"),
     Output("agg-bar", "figure"),
-    Input("log-string", "data"),
+    Input("second-interval", "n_intervals"),
     Input("id-selector", "value"),
     Input("time-range-slider", "value"),
     Input("agg-interval", "value"),
+    State("log-string", "data"),
 )
-def update_aggregated_graphs(log_string, selected_ids, slider_range, agg_interval):
+def update_aggregated_graphs(_, selected_ids, slider_range, agg_interval, log_string):
     df = load_csv(log_string)
     df = df[df["ID"].isin(selected_ids)]
 

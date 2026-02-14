@@ -1,5 +1,4 @@
-from io import StringIO
-from dash import Output, Input
+from dash import Output, Input, State
 from app import app
 from utils.data_loader import load_csv
 import plotly.express as px
@@ -10,11 +9,12 @@ import pandas as pd
 @app.callback(
     Output("time-series-graph", "figure"),
     Output("occurrence-bar", "figure"),
-    Input("log-string", "data"),
+    Input("second-interval", "n_intervals"),
     Input("id-selector", "value"),
     Input("time-range-slider", "value"),
+    State("log-string", "data"),
 )
-def update_graph(log_string, selected_ids, slider_range):
+def update_graph(_, selected_ids, slider_range, log_string):
     """Update graphs based on file selection, IDs, and time range."""
     df = load_csv(log_string)
     df = df[df["ID"].isin(selected_ids)]

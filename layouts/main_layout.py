@@ -16,8 +16,10 @@ def main_layout(csv_files):
             time_graphs(),
             agg_graphs(),
             energy_graphs(),
-            websocket(),
             log_table(),
+            websocket(),
             dcc.Store(id="log-string"),
+            dcc.Store(id="ws-connected"),
+            dcc.Interval(id="second-interval", interval=1000),
         ],
     )
