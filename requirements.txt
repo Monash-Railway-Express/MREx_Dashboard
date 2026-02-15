@@ -7,6 +7,7 @@ click==8.3.1
 colorama==0.4.6
 dash==4.0.0
 dash-extensions==2.0.4
+dash_daq==0.6.0
 dataclass-wizard==0.39.1
 EditorConfig==0.17.1
 Flask==3.1.2

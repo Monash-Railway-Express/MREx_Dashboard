@@ -43,9 +43,8 @@ emcy_type = {
     0x03: "Battery fault",
 }
 
-def translate(index, timestamp, id, dlc, data):
+def translate_row(timestamp, id, dlc, data):
     translated = {
-        "index": index,
         "Timestamp": timestamp
     }
 
@@ -58,20 +57,30 @@ def translate(index, timestamp, id, dlc, data):
     if id_int == 0x000:
         translated["Function"] = "NMT"
         translated["Node"] = data_int[1]
-        translated["Data"] = nmt_state[data_int[0]]
+        try:
+            translated["Data"] = nmt_state[data_int[0]]
+        except KeyError:
+            translated["Data"] = f"Unknown state {data[0]}"
 
     elif 0x080 <= id_int and id_int <= 0x0FF:
         translated["Function"] = "EMCY"
-        translated["Node"] = id - 0x080
-        translated["Data"] = f"{emcy_priority[data_int[0]]} at node {data_int[1]}: {emcy_message[concatify(data_int[5:1:-1])]}"
+        translated["Node"] = id_int - 0x080
+        try:
+            translated["Data"] = f"{emcy_priority[data_int[0]]} at node {data_int[1]}: {emcy_message[concatify(data_int[5:1:-1])]}"
+        except KeyError:
+            translated["Data"] = f"Unknown emergency priority {data[0]} at node {data_int[1]}: message {data[2:6]}"
 
     elif 0x180 <= id_int and id_int <= 0x57F:
         translated["Function"] = "PDO"
 
     elif 0x580 <= id_int and id_int <= 0x5FF:
         translated["Function"] = "SDO Tx"
-        translated["Node"] = id - 0x580
-        translated["Data"] = f"{object_dictionary[concatify(data_int[2], data_int[1])][data_int[3]]}: "
+        translated["Node"] = id_int - 0x580
+        try:
+            translated["Data"] = f"{object_dictionary[concatify([data_int[2], data_int[1]])][data_int[3]]}: "
+        except KeyError:
+            translated["Data"] = f"Unknown object index {data[1:3]} subindex {data[3]}: "
+        
         if data_int[0] == 0x60:
             translated["Data"] += "Write confirmation"
         elif data_int[0] in [0x4F, 0x4B, 0x43]:
@@ -81,8 +90,12 @@ def translate(index, timestamp, id, dlc, data):
 
     elif 0x600 <= id_int and id_int <= 0x67F:
         translated["Function"] = "SDO Rx"
-        translated["Node"] = id - 0x600
-        translated["Data"] = f"{object_dictionary[concatify(data_int[2], data_int[1])][data_int[3]]}: "
+        translated["Node"] = id_int - 0x600
+        try:
+            translated["Data"] = f"{object_dictionary[concatify([data_int[2], data_int[1]])][data_int[3]]}: "
+        except KeyError:
+            translated["Data"] = f"Unknown object index {data[1:3]} subindex {data[3]}: "
+        
         if data_int[0] in [0x2F, 0x2B, 0x23]:
             translated["Data"] += hexify(concatify(data_int[7:3:-1])) ## check little-endianness
         elif data_int[0] == 0x40:
@@ -92,8 +105,11 @@ def translate(index, timestamp, id, dlc, data):
 
     elif 0x700 <= id_int and id_int <= 0x77F:
         translated["Function"] = "Hearbeat"
-        translated["Node"] = id - 0x700
-        translated["Data"] = nmt_state[data_int[0]]
+        translated["Node"] = id_int - 0x700
+        try:
+            translated["Data"] = nmt_state[data_int[0]]
+        except KeyError:
+            translated["Data"] = f"Unknown state {data[0]}"
 
     else:
         translated["Function"] = "Unknown"
@@ -101,7 +117,7 @@ def translate(index, timestamp, id, dlc, data):
     return translated
 
 def intify(hex_string):
-    if hex_string == "":
+    if hex_string == "" or not isinstance(hex_string, str):
         return 0
 
     return int(hex_string, 16)
