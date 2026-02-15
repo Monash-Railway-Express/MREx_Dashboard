@@ -6,7 +6,8 @@ def log_table():
         children=[
             dash_table.DataTable(
                 id="log-table",
-                fixed_rows={"headers": True}
+                fixed_rows={"headers": True},
+                sort_action="native",
             )
         ],
     )

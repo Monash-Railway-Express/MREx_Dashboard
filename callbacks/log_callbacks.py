@@ -23,4 +23,4 @@ def update_log_table(_, selected_ids, slider_range, log_string):
     # Filter by time range
     df = df[(df["Timestamp"] >= start_dt) & (df["Timestamp"] <= end_dt)]
     
-    return df.to_dict("records")
+    return df.reset_index().to_dict("records")
