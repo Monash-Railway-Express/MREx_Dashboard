@@ -14,9 +14,15 @@ import pandas as pd
     Input("id-selector", "value"),
     Input("time-range-slider", "value"),
     Input("energy-metric-selector", "value"),
+    State("dark-selector", "on"),
     State("log-string", "data"),
 )
-def update_energy_graphs(_, selected_ids, slider_range, metric, log_string):
+def update_energy_graphs(_, selected_ids, slider_range, metric, dark, log_string):
+    if dark:
+        template = "plotly_dark"
+    else:
+        template = None
+
     df = load_csv(log_string)
 
     # Time filtering
@@ -24,7 +30,7 @@ def update_energy_graphs(_, selected_ids, slider_range, metric, log_string):
     df = df[(df["Timestamp"] >= start_dt) & (df["Timestamp"] <= end_dt)]
 
     if df.empty:
-        return {}, {}
+        return px.line(template=template), px.line(template=template)
 
     # --- LEFT GRAPH LOGIC ---
     if metric == "Current":
@@ -32,7 +38,7 @@ def update_energy_graphs(_, selected_ids, slider_range, metric, log_string):
         df_metric = df[df["ID"] == "0x187"]   # FIXED
 
         if df_metric.empty:
-            fig_energy = {}
+            fig_energy = px.line(template=template)
         else:
             df_metric["Current"] = df_metric.apply(
                 lambda row: decode_bytes(row, ["Data4", "Data5", "Data6", "Data7"], signed=True),
@@ -44,6 +50,7 @@ def update_energy_graphs(_, selected_ids, slider_range, metric, log_string):
                 df_metric,
                 x="Timestamp",
                 y="Current",
+                template=template,
             )
 
     elif metric == "Voltage":
@@ -51,7 +58,7 @@ def update_energy_graphs(_, selected_ids, slider_range, metric, log_string):
         df_metric = df[df["ID"] == "0x187"]   # FIXED
 
         if df_metric.empty:
-            fig_energy = {}
+            fig_energy = px.line(template=template)
         else:
             df_metric["Voltage"] = df_metric.apply(
             lambda row: decode_bytes(row, ["Data2", "Data3"], signed=True),
@@ -63,6 +70,7 @@ def update_energy_graphs(_, selected_ids, slider_range, metric, log_string):
                 df_metric,
                 x="Timestamp",
                 y="Voltage",
+                template=template,
             )
 
     else:
@@ -70,7 +78,7 @@ def update_energy_graphs(_, selected_ids, slider_range, metric, log_string):
         df_metric = df[df["ID"] == "0x387"]   # FIXED
 
         if df_metric.empty:
-            fig_energy = {}
+            fig_energy = px.line(template=template)
         else:
             df_metric["Power"] = df_metric.apply(
                 lambda row: decode_bytes(row, ["Data4", "Data5", "Data6", "Data7"], signed=True),
@@ -82,6 +90,7 @@ def update_energy_graphs(_, selected_ids, slider_range, metric, log_string):
                 df_metric,
                 x="Timestamp",
                 y="Power",
+                template=template,
             )
 
 
@@ -90,7 +99,7 @@ def update_energy_graphs(_, selected_ids, slider_range, metric, log_string):
     df_soc = df[df["ID"] == "0x287"]
 
     if df_soc.empty:
-        fig_soc = {}
+        fig_soc = px.line(template=template)
     else:
         df_soc["SOC"] = df_soc.apply(
             lambda row: decode_bytes(row, ["Data2", "Data3"], signed=True),
@@ -103,6 +112,7 @@ def update_energy_graphs(_, selected_ids, slider_range, metric, log_string):
             x="Timestamp",
             y="SOC",
             title="State of Charge (SOC)",
+            template=template,
         )
 
 

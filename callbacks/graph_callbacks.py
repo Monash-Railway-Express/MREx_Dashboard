@@ -12,9 +12,15 @@ import pandas as pd
     Input("second-interval", "n_intervals"),
     Input("id-selector", "value"),
     Input("time-range-slider", "value"),
+    State("dark-selector", "on"),
     State("log-string", "data"),
 )
-def update_graph(_, selected_ids, slider_range, log_string):
+def update_graph(_, selected_ids, slider_range, dark, log_string):
+    if dark:
+        template = "plotly_dark"
+    else:
+        template = None
+    
     """Update graphs based on file selection, IDs, and time range."""
     df = load_csv(log_string)
     df = df[df["ID"].isin(selected_ids)]
@@ -26,11 +32,11 @@ def update_graph(_, selected_ids, slider_range, log_string):
     df = df[(df["Timestamp"] >= start_dt) & (df["Timestamp"] <= end_dt)]
 
     if df.empty:
-        return {}, {}
+        return px.scatter(template=template), px.bar(template=template)
 
     # Generate figures
-    fig_time = _create_time_series_figure(df)
-    fig_bar = _create_occurrence_figure(df)
+    fig_time = _create_time_series_figure(df, template)
+    fig_bar = _create_occurrence_figure(df, template)
 
     return fig_time, fig_bar
 
@@ -47,7 +53,7 @@ def _get_time_range(df, slider_range):
     return start_dt, end_dt
 
 
-def _create_time_series_figure(df):
+def _create_time_series_figure(df, template):
     """Create scatter plot of messages over time."""
     fig = px.scatter(
         df,
@@ -55,13 +61,14 @@ def _create_time_series_figure(df):
         y="ID",
         color="ID",
         title="CAN Messages Over Time",
+        template=template,
     )
     fig.update_xaxes(rangeslider_visible=True)
 
     return fig
 
 
-def _create_occurrence_figure(df):
+def _create_occurrence_figure(df, template):
     """Create bar chart of message occurrences per ID."""
     counts = df["ID"].value_counts().reset_index(name="Count")
 
@@ -72,6 +79,7 @@ def _create_occurrence_figure(df):
         color="ID",
         title="Occurrences per ID",
         text="Count",
+        template=template,
     )
     fig.update_traces(textposition="outside")
 

@@ -15,6 +15,7 @@ import callbacks.time_callbacks
 import callbacks.power_callbacks
 import callbacks.ws_callbacks
 import callbacks.log_callbacks
+import callbacks.dark_callbacks
 
 
 if __name__ == "__main__":

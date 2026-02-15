@@ -15,9 +15,15 @@ pio.templates.default = "plotly"
     Input("id-selector", "value"),
     Input("time-range-slider", "value"),
     Input("agg-interval", "value"),
+    State("dark-selector", "on"),
     State("log-string", "data"),
 )
-def update_aggregated_graphs(_, selected_ids, slider_range, agg_interval, log_string):
+def update_aggregated_graphs(_, selected_ids, slider_range, agg_interval, dark, log_string):
+    if dark:
+        template = "plotly_dark"
+    else:
+        template = None
+
     df = load_csv(log_string)
     df = df[df["ID"].isin(selected_ids)]
 
@@ -26,7 +32,7 @@ def update_aggregated_graphs(_, selected_ids, slider_range, agg_interval, log_st
     df = df[(df["Timestamp"] >= start_dt) & (df["Timestamp"] <= end_dt)]
 
     if df.empty:
-        return {}, {}
+        return px.line(template=template), px.bar(template=template)
 
     df = df.set_index("Timestamp")
     agg_counts = (
@@ -37,14 +43,15 @@ def update_aggregated_graphs(_, selected_ids, slider_range, agg_interval, log_st
     )
 
     if agg_counts.empty:
-        return {}, {}
-
+        return px.line(template=template), px.bar(template=template)
+    
     fig_time = px.line(
         agg_counts,
         x="Timestamp",
         y="Count",
         color="ID",
         title=f"Messages per {agg_interval}",
+        template=template,
     )
 
     totals = agg_counts.groupby("ID")["Count"].mean().reset_index()
@@ -55,6 +62,7 @@ def update_aggregated_graphs(_, selected_ids, slider_range, agg_interval, log_st
         color="ID",
         title=f"Average Messages per ID ({agg_interval})",
         text="Count",
+        template=template,
     )
     fig_bar.update_traces(textposition="outside")
 

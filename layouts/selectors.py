@@ -1,10 +1,17 @@
 from dash import html, dcc
+import dash_daq as daq
 # Assuming load_csv is a function that loads your CSV and is already defined or imported
 # from your_data_loading_module import load_csv  
 
 def selectors(csv_files):
     return html.Div(
         children=[
+            # Dark theme selector
+            daq.BooleanSwitch(
+                id="dark-selector",
+                label="Dark?"
+            ),
+
             # File selector
             html.H1("Select log source"),
 

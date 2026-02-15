@@ -9,7 +9,7 @@ from .log_table import log_table
 
 def main_layout(csv_files):
     return html.Div(
-        className="page-container",
+        id="page-container",
         children=[
             header(),
             selectors(csv_files),
