@@ -1,0 +1,116 @@
+# Sheet https://docs.google.com/spreadsheets/d/1OaXG5B06xnvpNkGQIkrtbM_n-pCCqvnd99yezD7YYoQ/edit?usp=sharing
+emcy_message = {
+
+}
+
+object_dictionary = {
+
+}
+
+pdo = [
+    {
+
+    },
+    {
+
+    },
+    {
+
+    },
+    {
+
+    },
+]
+
+# Spec https://github.com/Monash-Railway-Express/CAN_MREx
+nmt_state = {
+    0x01: "Operational",
+    0x02: "Stopped",
+    0x80: "Pre-operational",
+    0x81: "Reset node",
+    0x82: "Reset communication",
+}
+
+emcy_priority = {
+    0: "Major",
+    1: "Minor",
+}
+
+emcy_type = {
+    0x00: "CAN MREx fault",
+    0x01: "Motor fault",
+    0x02: "Brake fault",
+    0x03: "Battery fault",
+}
+
+def translate(index, timestamp, id, dlc, data):
+    translated = {
+        "index": index,
+        "Timestamp": timestamp
+    }
+
+    id_int = intify(id)
+
+    data_int = []
+    for datum in data:
+        data_int.append(intify(datum))
+
+    if id_int == 0x000:
+        translated["Function"] = "NMT"
+        translated["Node"] = data_int[1]
+        translated["Data"] = nmt_state[data_int[0]]
+
+    elif 0x080 <= id_int and id_int <= 0x0FF:
+        translated["Function"] = "EMCY"
+        translated["Node"] = id - 0x080
+        translated["Data"] = f"{emcy_priority[data_int[0]]} at node {data_int[1]}: {emcy_message[concatify(data_int[5:1:-1])]}"
+
+    elif 0x180 <= id_int and id_int <= 0x57F:
+        translated["Function"] = "PDO"
+
+    elif 0x580 <= id_int and id_int <= 0x5FF:
+        translated["Function"] = "SDO Tx"
+        translated["Node"] = id - 0x580
+        translated["Data"] = f"{object_dictionary[concatify(data_int[2], data_int[1])][data_int[3]]}: "
+        if data_int[0] == 0x60:
+            translated["Data"] += "Write confirmation"
+        elif data_int[0] in [0x4F, 0x4B, 0x43]:
+            translated["Data"] += hexify(concatify(data_int[7:3:-1])) ## check little-endianness
+        else:
+            translated["Data"] += f"Unknown command {data[0]} data {data[4:8]}"
+
+    elif 0x600 <= id_int and id_int <= 0x67F:
+        translated["Function"] = "SDO Rx"
+        translated["Node"] = id - 0x600
+        translated["Data"] = f"{object_dictionary[concatify(data_int[2], data_int[1])][data_int[3]]}: "
+        if data_int[0] in [0x2F, 0x2B, 0x23]:
+            translated["Data"] += hexify(concatify(data_int[7:3:-1])) ## check little-endianness
+        elif data_int[0] == 0x40:
+            translated["Data"] += "Read request"
+        else:
+            translated["Data"] += f"Unknown command {data[0]} data {data[4:8]}"
+
+    elif 0x700 <= id_int and id_int <= 0x77F:
+        translated["Function"] = "Hearbeat"
+        translated["Node"] = id - 0x700
+        translated["Data"] = nmt_state[data_int[0]]
+
+    else:
+        translated["Function"] = "Unknown"
+
+    return translated
+
+def intify(hex_string):
+    if hex_string == "":
+        return 0
+
+    return int(hex_string, 16)
+
+def concatify(data_int):
+    result = 0
+    for i, datum_int in enumerate(reversed(data_int)):
+        result += datum_int * 16**(i*2)
+    return result
+
+def hexify(number):
+    return f"0x{number:X}"
