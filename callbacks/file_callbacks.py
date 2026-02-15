@@ -1,6 +1,6 @@
 import os
 import base64
-from dash import State, ctx, Input, Output
+from dash import State, ctx, Input, Output, no_update
 import pandas as pd
 from app import app
 from utils.data_loader import load_csv
@@ -33,6 +33,18 @@ def update_log_string(filename, contents, _, message):
             log_string = file.read()
 
         return log_string, False
+    
+@app.callback(
+    Output("id-selector", "options", allow_duplicate=True),
+    Output("id-selector", "value", allow_duplicate=True),
+    Input("ws-connected", "data"),
+    prevent_initial_call=True,
+)
+def reset_id_selector(ws_connected):
+    if (ws_connected):
+        return [], []
+    else:
+        return no_update
 
 @app.callback(
     Output("id-selector", "options"),
@@ -42,8 +54,13 @@ def update_log_string(filename, contents, _, message):
     Output("time-range-slider", "value"),
     Output("time-range-slider", "marks"),
     Input("log-string", "data"),
+    State("ws-connected", "data"),
+    State("id-selector", "options"),
+    State("id-selector", "value"),
+    State("time-range-slider", "max"),
+    State("time-range-slider", "value"),
 )
-def update_id_selector(log_string):
+def update_id_selector(log_string, ws_connected, previous_ids, previous_selected_ids, previous_max_time, previous_selected_times):
     df = load_csv(log_string)
     ids = sorted(df["ID"].unique())
 
@@ -57,12 +74,25 @@ def update_id_selector(log_string):
         end_ts: df["Timestamp"].max().strftime("%H:%M:%S"),
     }
 
+    if ws_connected:
+        if (len(previous_ids) == len(previous_selected_ids)):
+            selected_ids = ids
+        else:
+            selected_ids = no_update
+
+        if (previous_selected_times[1] == previous_max_time):
+            selected_times = [previous_selected_times[0], end_ts]
+        else:
+            selected_times = no_update
+    else:
+        selected_ids = ids
+        selected_times = [start_ts, end_ts]
 
     return (
         [{"label": i, "value": i} for i in ids],
-        ids,
+        selected_ids,
         start_ts,
         end_ts,
-        [start_ts, end_ts],
+        selected_times,
         marks,
     )

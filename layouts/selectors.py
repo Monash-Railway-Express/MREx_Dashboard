@@ -100,6 +100,7 @@ def selectors(csv_files):
                             step=1000,
                             tooltip={"placement": "bottom", "always_visible": False},
                             allowCross=False,
+                            updatemode="drag",
                         ),
                         className="slider-wrapper"
                     ),
