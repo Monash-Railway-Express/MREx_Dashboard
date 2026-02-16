@@ -1,3 +1,5 @@
+from urllib import request
+import re
 import os
 import base64
 from dash import State, ctx, Input, Output, no_update
@@ -9,11 +11,24 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOGS_DIR = os.path.join(BASE_DIR, "Logs")
 
 @app.callback(
+    Output("remote-selector", "options"),
+    Input("second-interval", "n_intervals"),
+)
+def update_remote_selector(_):
+    try:
+        response = request.urlopen("http://10.0.0.1/files")
+        http_files = re.split(r"<.*?>", response.read().decode("utf-8"))
+        http_files = [path for path in http_files if path[-4:].lower() == ".csv"]
+    except:
+        http_files = []
+    return [{"label": f, "value": f} for f in http_files]
+
+@app.callback(
     Output("log-string", "data"),
     Output("ws-connected", "data"),
     Input("folder-selector", "value"),
     Input("local-selector", "contents"),
-    Input("remote-selector", "n_clicks"),
+    Input("ws-selector", "n_clicks"),
     State("ws", "message"),
 )
 def update_log_string(filename, contents, _, message):

@@ -46,13 +46,25 @@ def selectors(csv_files):
                             ),
                         ],
                     ),
-
+                    
                     html.Div(
                         className="file-menu",
                         children=[
                             html.Div("Remote server", className="menu-title"),
-                            dcc.Button(
+                            dcc.Dropdown(
                                 id="remote-selector",
+                                clearable=False,
+                                className="dropdown",
+                            ),
+                        ],
+                    ),
+
+                    html.Div(
+                        className="file-menu",
+                        children=[
+                            html.Div("Remote feed", className="menu-title"),
+                            dcc.Button(
+                                id="ws-selector",
                                 children=["Connect to WebSocket"],
                             ),
                         ],
