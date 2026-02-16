@@ -62,3 +62,11 @@ In the MREx_Dashboard folder in your favourite terminal.
 `python index.py`
 
 Visit the website linked in the terminal.
+
+## TODO
+
+Performance issues:
+1. Callbacks running every second even when not using websocket live feed. Note that there should preferably be periodic checks of which files are available on the web server to update the "Remote server" log source selector - but this is not critical.
+2. Translating the entire table and generating graphs from scratch every second, especially when log growing quickly over websocket, rather than appending only new log entries.
+
+Note test3.csv seems to not want to update graphs/table.
