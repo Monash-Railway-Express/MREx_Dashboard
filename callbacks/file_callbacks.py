@@ -26,36 +26,41 @@ def update_remote_selector(_):
 @app.callback(
     Output("log-string", "data"),
     Output("ws-connected", "data"),
+    Output("folder-selector", "value"),
+    Output("local-selector", "contents"),
+    Output("local-filepath", "children"),
+    Output("remote-selector", "value"),
+    Output("ws-status", "children"),
     Input("folder-selector", "value"),
     Input("local-selector", "contents"),
     Input("remote-selector", "value"),
     Input("ws-selector", "n_clicks"),
-    State("ws", "message"),
+    State("local-selector", "filename"),
 )
-def update_log_string(filename, contents, filepath, _, message):
+def update_log_string(filename, contents, filepath, _, contents_filename):
     if ctx.triggered_id == "local-selector":
         _, content_string = contents.split(",")
         log_string = base64.b64decode(content_string).decode("utf-8")
-        return log_string, False
+        return log_string, False, None, "", contents_filename, None, ""
     elif ctx.triggered_id == "remote-selector":
         try:
             response = request.urlopen(filepath)
             log_string = response.read().decode("utf-8")
-            return log_string, False
+            return log_string, False, None, "", "", no_update, ""
         except:
-            return "", False
+            return no_update, no_update, no_update, no_update, no_update, ""
     elif ctx.triggered_id == "ws-selector":
-        return f"Timestamp,ID,DLC,Data0,Data1,Data2,Data3,Data4,Data5,Data6,Data7\n{message["data"]}\n", True
+        return "Timestamp,ID,DLC,Data0,Data1,Data2,Data3,Data4,Data5,Data6,Data7\n", True, None, "", "", None, "Listening"
     else:
         if not filename:
-            return "", False
+            return "", False, no_update, "", "", None, ""
         
         path = os.path.join(LOGS_DIR, filename)
         
         with open(path, "r") as file:
             log_string = file.read()
 
-        return log_string, False
+        return log_string, False, no_update, "", "", None, ""
     
 @app.callback(
     Output("id-selector", "options", allow_duplicate=True),

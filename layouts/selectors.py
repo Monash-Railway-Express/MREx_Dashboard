@@ -9,7 +9,7 @@ def selectors(csv_files):
             # Dark theme selector
             daq.BooleanSwitch(
                 id="dark-selector",
-                label="Dark?"
+                label="Dark?",
             ),
 
             # File selector
@@ -44,6 +44,7 @@ def selectors(csv_files):
                                     dcc.Button("Select file")
                                 ],
                             ),
+                            html.P(id="local-filepath"),
                         ],
                     ),
                     
@@ -67,6 +68,7 @@ def selectors(csv_files):
                                 id="ws-selector",
                                 children=["Connect to WebSocket"],
                             ),
+                            html.P(id="ws-status"),
                         ],
                     ),
                 ]

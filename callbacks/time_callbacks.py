@@ -12,10 +12,12 @@ def display_times(slider_range):
         return "", ""
 
     start_ms, end_ms = slider_range
-    start_dt = datetime.datetime.fromtimestamp(start_ms / 1000)
-    end_dt = datetime.datetime.fromtimestamp(end_ms / 1000)
-
-    return (
-        start_dt.strftime("%H:%M:%S"),
-        end_dt.strftime("%H:%M:%S"),
-    )
+    try:
+        start_dt = datetime.datetime.fromtimestamp(start_ms / 1000)
+        end_dt = datetime.datetime.fromtimestamp(end_ms / 1000)
+        return (
+            start_dt.strftime("%H:%M:%S"),
+            end_dt.strftime("%H:%M:%S"),
+        )
+    except:
+        return "", ""
