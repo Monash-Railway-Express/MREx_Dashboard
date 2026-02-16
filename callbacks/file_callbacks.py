@@ -28,15 +28,23 @@ def update_remote_selector(_):
     Output("ws-connected", "data"),
     Input("folder-selector", "value"),
     Input("local-selector", "contents"),
+    Input("remote-selector", "value"),
     Input("ws-selector", "n_clicks"),
     State("ws", "message"),
 )
-def update_log_string(filename, contents, _, message):
+def update_log_string(filename, contents, filepath, _, message):
     if ctx.triggered_id == "local-selector":
         _, content_string = contents.split(",")
         log_string = base64.b64decode(content_string).decode("utf-8")
         return log_string, False
     elif ctx.triggered_id == "remote-selector":
+        try:
+            response = request.urlopen(filepath)
+            log_string = response.read().decode("utf-8")
+            return log_string, False
+        except:
+            return "", False
+    elif ctx.triggered_id == "ws-selector":
         return f"Timestamp,ID,DLC,Data0,Data1,Data2,Data3,Data4,Data5,Data6,Data7\n{message["data"]}\n", True
     else:
         if not filename:
@@ -80,14 +88,24 @@ def update_id_selector(log_string, ws_connected, previous_ids, previous_selected
     ids = sorted(df["ID"].unique())
 
     # Convert timestamps to POSIX seconds
-    start_ts = df["Timestamp"].min().value // 10**6   # to milliseconds
-    end_ts = df["Timestamp"].max().value // 10**6
+    try:
+        start_ts = df["Timestamp"].min().value // 10**6   # to milliseconds
+        end_ts = df["Timestamp"].max().value // 10**6
+    except:
+        start_ts = 0
+        end_ts = 0
 
 
-    marks = {
-        start_ts: df["Timestamp"].min().strftime("%H:%M:%S"),
-        end_ts: df["Timestamp"].max().strftime("%H:%M:%S"),
-    }
+    try:
+        marks = {
+            start_ts: df["Timestamp"].min().strftime("%H:%M:%S"),
+            end_ts: df["Timestamp"].max().strftime("%H:%M:%S"),
+        }
+    except:
+        marks = {
+            start_ts: "",
+            end_ts: "",
+        }
 
     if ws_connected:
         if (len(previous_ids) == len(previous_selected_ids)):
