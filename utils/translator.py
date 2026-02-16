@@ -1,26 +1,22 @@
 # Sheet https://docs.google.com/spreadsheets/d/1OaXG5B06xnvpNkGQIkrtbM_n-pCCqvnd99yezD7YYoQ/edit?usp=sharing
+from utils.byte_decoder import decode_bytes
+
+
 emcy_message = {
 
 }
 
 object_dictionary = {
-
+    0x2000: {
+        0x00: "Current",
+        0x01: "Voltage",
+        0x02: "State of charge",
+    },
 }
 
-pdo = [
-    {
-
-    },
-    {
-
-    },
-    {
-
-    },
-    {
-
-    },
-]
+pdo_entries = {
+    0x187: [(0x2000, 0x00, 32, True), (0x2000, 0x01, 16, True), (0x2000, 0x02, 16, True)],
+}
 
 # Spec https://github.com/Monash-Railway-Express/CAN_MREx
 nmt_state = {
@@ -43,13 +39,14 @@ emcy_type = {
     0x03: "Battery fault",
 }
 
-def translate_row(timestamp, id, dlc, data):
+def translate_row(timestamp, id, dlc_int, data):
     translated = {
         "Timestamp": timestamp
     }
 
     id_int = intify(id)
 
+    data = data[:dlc_int]
     data_int = []
     for datum in data:
         data_int.append(intify(datum))
@@ -72,6 +69,22 @@ def translate_row(timestamp, id, dlc, data):
 
     elif 0x180 <= id_int and id_int <= 0x57F:
         translated["Function"] = "PDO"
+        translated["Node"] = id_int % 0x80
+        # Assuming object data boundaries are on byte boundaries - reflects a CAN MREX implementation assumption
+        try:
+            translated["Data"] = "| "
+            current_byte = 0
+            for index, subindex, bits, signed in reversed(pdo_entries[id_int]):
+                upper_byte = current_byte + (bits // 8)
+                cols = [i for i in range(current_byte, upper_byte, 1)]
+                raw = decode_bytes(data, cols, signed)
+                try:
+                    translated["Data"] += f"{object_dictionary[index][subindex]}: {raw} | "
+                except KeyError:
+                    translated["Data"] += f"Unknown object index {index} subindex {subindex}: {raw} | "
+                current_byte = upper_byte
+        except KeyError:
+            translated["Data"] = f"Unmapped PDO COB-ID {id} data {data}"
 
     elif 0x580 <= id_int and id_int <= 0x5FF:
         translated["Function"] = "SDO Tx"
@@ -86,7 +99,7 @@ def translate_row(timestamp, id, dlc, data):
         elif data_int[0] in [0x4F, 0x4B, 0x43]:
             translated["Data"] += hexify(concatify(data_int[7:3:-1])) ## check little-endianness
         else:
-            translated["Data"] += f"Unknown command {data[0]} data {data[4:8]}"
+            translated["Data"] += f"Unknown command {data[0]} data {data[4:]}"
 
     elif 0x600 <= id_int and id_int <= 0x67F:
         translated["Function"] = "SDO Rx"
@@ -101,7 +114,7 @@ def translate_row(timestamp, id, dlc, data):
         elif data_int[0] == 0x40:
             translated["Data"] += "Read request"
         else:
-            translated["Data"] += f"Unknown command {data[0]} data {data[4:8]}"
+            translated["Data"] += f"Unknown command {data[0]} data {data[4:]}"
 
     elif 0x700 <= id_int and id_int <= 0x77F:
         translated["Function"] = "Hearbeat"

@@ -50,7 +50,7 @@ def update_log_string(filename, contents, filepath, _, contents_filename):
         except:
             return no_update, no_update, no_update, no_update, no_update, ""
     elif ctx.triggered_id == "ws-selector":
-        return "Timestamp,ID,DLC,Data0,Data1,Data2,Data3,Data4,Data5,Data6,Data7\n", True, None, "", "", None, "Listening"
+        return "Timestamp,ID,DLC,Data0,Data1,Data2,Data3,Data4,Data5,Data6,Data7\n", True, None, "", "", None, "Listening..."
     else:
         if not filename:
             return "", False, no_update, "", "", None, ""

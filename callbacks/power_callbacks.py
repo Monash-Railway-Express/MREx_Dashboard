@@ -2,6 +2,7 @@ from io import StringIO
 from dash import Output, Input, State
 from app import app
 from callbacks.graph_callbacks import _get_time_range
+from utils.byte_decoder import decode_bytes
 from utils.data_loader import load_csv
 import plotly.express as px
 import plotly.io as pio
@@ -117,44 +118,3 @@ def update_energy_graphs(_, selected_ids, slider_range, metric, dark, log_string
 
 
     return fig_energy, fig_soc
-
-
-
-def decode_bytes(row, cols, signed=False, endian="little"):
-    """
-    Generic decoder for CAN data bytes.
-    
-    cols   = list of column names, e.g. ["Data4", "Data5", "Data6", "Data7"]
-    signed = True for 2's complement
-    endian = "little" or "big"
-    """
-
-    # Clean and convert each byte
-    bytes_list = []
-    for col in cols:
-        val = str(row[col]).replace("0x", "").strip()
-        bytes_list.append(int(val, 16))
-
-    # Combine into integer
-    if endian == "little":
-        raw = 0
-        for i, b in enumerate(bytes_list):
-            raw |= b << (8 * i)
-    else:
-        raw = 0
-        for b in bytes_list:
-            raw = (raw << 8) | b
-
-    # Convert to signed if needed
-    if signed:
-        bit_len = 8 * len(cols)
-        sign_bit = 1 << (bit_len - 1)
-        full_range = 1 << bit_len
-
-        if raw & sign_bit:
-            raw -= full_range
-
-    return raw
-
-
-
