@@ -18,6 +18,18 @@ pdo_entries = {
     0x187: [(0x2000, 0x00, 32, True), (0x2000, 0x01, 16, True), (0x2000, 0x02, 16, True)],
 }
 
+node_name = {
+    1: "Motor Controller",
+    2: "Brakes",
+    3: "Driver Control",
+    4: "Lights",
+    5: "Audio",
+    6: "Sensor System",
+    7: "Battery",
+    8: "CAN Logger",
+    9: "Driver Screen"
+}
+
 # Spec https://github.com/Monash-Railway-Express/CAN_MREx
 nmt_state = {
     0x01: "Operational",
@@ -53,7 +65,8 @@ def translate_row(timestamp, id, dlc_int, data):
 
     if id_int == 0x000:
         translated["Function"] = "NMT"
-        translated["Node"] = data_int[1]
+        translated["Node ID"] = data_int[1]
+        translated["Node"] = node_name[translated["Node ID"]]
         try:
             translated["Data"] = nmt_state[data_int[0]]
         except KeyError:
@@ -61,7 +74,8 @@ def translate_row(timestamp, id, dlc_int, data):
 
     elif 0x080 <= id_int and id_int <= 0x0FF:
         translated["Function"] = "EMCY"
-        translated["Node"] = id_int - 0x080
+        translated["Node ID"] = id_int - 0x080
+        translated["Node"] = node_name[translated["Node ID"]]
         try:
             translated["Data"] = f"{emcy_priority[data_int[0]]} at node {data_int[1]}: {emcy_message[concatify(data_int[5:1:-1])]}"
         except KeyError:
@@ -69,7 +83,8 @@ def translate_row(timestamp, id, dlc_int, data):
 
     elif 0x180 <= id_int and id_int <= 0x57F:
         translated["Function"] = "PDO"
-        translated["Node"] = id_int % 0x80
+        translated["Node ID"] = id_int % 0x80
+        translated["Node"] = node_name[translated["Node ID"]]
         # Assuming object data boundaries are on byte boundaries - reflects a CAN MREX implementation assumption
         try:
             translated["Data"] = "| "
@@ -88,7 +103,8 @@ def translate_row(timestamp, id, dlc_int, data):
 
     elif 0x580 <= id_int and id_int <= 0x5FF:
         translated["Function"] = "SDO Tx"
-        translated["Node"] = id_int - 0x580
+        translated["Node ID"] = id_int - 0x580
+        translated["Node"] = node_name[translated["Node ID"]]
         try:
             translated["Data"] = f"{object_dictionary[concatify([data_int[2], data_int[1]])][data_int[3]]}: "
         except KeyError:
@@ -103,7 +119,8 @@ def translate_row(timestamp, id, dlc_int, data):
 
     elif 0x600 <= id_int and id_int <= 0x67F:
         translated["Function"] = "SDO Rx"
-        translated["Node"] = id_int - 0x600
+        translated["Node ID"] = id_int - 0x600
+        translated["Node"] = node_name[translated["Node ID"]]
         try:
             translated["Data"] = f"{object_dictionary[concatify([data_int[2], data_int[1]])][data_int[3]]}: "
         except KeyError:
@@ -118,7 +135,8 @@ def translate_row(timestamp, id, dlc_int, data):
 
     elif 0x700 <= id_int and id_int <= 0x77F:
         translated["Function"] = "Hearbeat"
-        translated["Node"] = id_int - 0x700
+        translated["Node ID"] = id_int - 0x700
+        translated["Node"] = node_name[translated["Node ID"]]
         try:
             translated["Data"] = nmt_state[data_int[0]]
         except KeyError:
