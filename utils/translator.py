@@ -1,20 +1,77 @@
-# Sheet https://docs.google.com/spreadsheets/d/1OaXG5B06xnvpNkGQIkrtbM_n-pCCqvnd99yezD7YYoQ/edit?usp=sharing
 from utils.byte_decoder import decode_bytes
 
-
+# Sheet https://docs.google.com/spreadsheets/d/1OaXG5B06xnvpNkGQIkrtbM_n-pCCqvnd99yezD7YYoQ/edit?usp=sharing
 emcy_message = {
-
+    0x00000001: "Object dictionary not found after receiving SDO",
+    0x00000002: "After SDO read request, Object dictionary on receiving node is not configured correctly.",
+    0x00000003: "Unexpected error :(",
+    0x00000004: "SDO write is not the same size as the recieving nodes object dictionary",
+    0x00000005: "Failed to send SDO response",
+    0x00000006: "SDO being transmitted is not the right size",
+    0x00000007: "Failed to send sdo request",
+    0x00000008: "SDO response not received",
+    0x00000009: "SDO Abort received",
+    0x0000000A: "Unexpected SDO CMD received in response",
+    0x00000101: "Heartbeat was not recieved in time (Node id will tell you what node failed)",
+    0x00000201: "NMT command failure (Node id will tell you which was target node)",
+    0x00000301: "Max Minor emergency count reached",
+    0x00000401: "TPDO read mapping failed",
+    0x00000402: "RPDO write mapping failed",
+    0x00000403: "TPDO transmission failed",
+    0x00000500: "Audio system SD card fault",
+    0x00000505: "Smoke Detected in the Locomotive",
+    0x00000506: "Temperature inside Locomotive is Too High",
 }
 
 object_dictionary = {
+    0x3012: {
+        0x01: "serviceBrake",
+        0x00: "regenBrake",
+    },
+    0x60FF: {
+        0x00: "desiredSpeed",
+    },
+    0x606A: {
+        0x00: "targetSpeed",
+    },
+    0x606C: {
+        0x00: "trueSpeed",
+    },
+    0x6060: {
+        0x00: "directionMode",
+    },
+    0x6061: {
+        0x00: "conditionMode",
+    },
+    0x6065: {
+        0x00: "horn",
+    },
     0x2000: {
         0x00: "Current",
         0x01: "Voltage",
         0x02: "State of charge",
+        0x03: "Power",
+        0x04: "Recovered energy",
     },
 }
 
-pdo_entries = {
+object_meaning = {
+    0x6060: {
+        0x00: {
+            0: "reverse",
+            1: "neutral",
+            2: "forward",
+        }
+    },
+    0x6065: {
+        0x00: {
+            0: "released",
+            1: "pressed",
+        },
+    },
+}
+
+pdo_entries = { # (PdoMapEntry, signed)
     0x187: [(0x2000, 0x00, 32, True), (0x2000, 0x01, 16, True), (0x2000, 0x02, 16, True)],
 }
 
